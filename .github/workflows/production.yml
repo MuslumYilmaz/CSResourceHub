@@ -15,7 +15,7 @@ concurrency:
 jobs:
   production-health:
     if: vars.PRODUCTION_URL != ''
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
       PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
