@@ -12,7 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  frontend:
+  checks:
+    name: Frontend checks
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -25,85 +26,152 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Check formatting
-        id: format
+      - name: Run frontend checks in parallel
+        id: checks
         continue-on-error: true
-        run: npm run format:check
-      - name: Lint
-        id: lint
+        run: |
+          mkdir -p tmp/frontend-checks
+          npm run format:check > tmp/frontend-checks/format.log 2>&1 &
+          format_pid=$!
+          npm run lint > tmp/frontend-checks/lint.log 2>&1 &
+          lint_pid=$!
+          npm run lint:css > tmp/frontend-checks/lint_css.log 2>&1 &
+          lint_css_pid=$!
+          npm run typecheck > tmp/frontend-checks/typecheck.log 2>&1 &
+          typecheck_pid=$!
+          npm run test:coverage > tmp/frontend-checks/test.log 2>&1 &
+          test_pid=$!
+          npm run build > tmp/frontend-checks/build.log 2>&1 &
+          build_pid=$!
+          set +e
+          wait "$format_pid"
+          format=$?
+          wait "$lint_pid"
+          lint=$?
+          wait "$lint_css_pid"
+          lint_css=$?
+          wait "$typecheck_pid"
+          typecheck=$?
+          wait "$test_pid"
+          test=$?
+          wait "$build_pid"
+          build=$?
+          set -e
+          for log in tmp/frontend-checks/*.log; do
+            cat "$log"
+          done
+          {
+            echo "format=$format"
+            echo "lint=$lint"
+            echo "lint_css=$lint_css"
+            echo "typecheck=$typecheck"
+            echo "test=$test"
+            echo "build=$build"
+          } >> "$GITHUB_OUTPUT"
+          if [ "$format" -ne 0 ] || [ "$lint" -ne 0 ] || [ "$lint_css" -ne 0 ] || [ "$typecheck" -ne 0 ] || [ "$test" -ne 0 ] || [ "$build" -ne 0 ]; then
+            exit 1
+          fi
+      - name: Upload verified site
+        if: steps.checks.outputs.build == '0'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verified-site
+          path: dist/
+          if-no-files-found: error
+          retention-days: 1
+      - name: Fail if frontend checks are not healthy
+        if: always()
+        run: |
+          if [ "${{ steps.checks.outputs.format }}" != "0" ] \
+            || [ "${{ steps.checks.outputs.lint }}" != "0" ] \
+            || [ "${{ steps.checks.outputs.lint_css }}" != "0" ] \
+            || [ "${{ steps.checks.outputs.typecheck }}" != "0" ] \
+            || [ "${{ steps.checks.outputs.test }}" != "0" ] \
+            || [ "${{ steps.checks.outputs.build }}" != "0" ]; then
+            exit 1
+          fi
+
+  e2e:
+    name: E2E (${{ matrix.project }})
+    needs: checks
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - project: chromium
+            browser: chromium
+          - project: firefox
+            browser: firefox
+          - project: webkit
+            browser: webkit
+          - project: mobile-chrome
+            browser: chromium
+          - project: mobile-safari
+            browser: webkit
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Download verified site
+        id: site
         continue-on-error: true
-        run: npm run lint
-      - name: Lint CSS
-        id: lint_css
-        continue-on-error: true
-        run: npm run lint:css
-      - name: Typecheck
-        id: typecheck
-        continue-on-error: true
-        run: npm run typecheck
-      - name: Test with coverage thresholds
-        id: test
-        continue-on-error: true
-        run: npm run test:coverage
-      - name: Build
-        id: build
-        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: verified-site
+          path: dist
+      - name: Build site when verified artifact is unavailable
+        if: steps.site.outcome != 'success'
         run: npm run build
-      - name: Install Playwright browser
-        id: browser
-        continue-on-error: true
-        run: npx playwright install --with-deps chromium firefox webkit
-      - name: End-to-end tests
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
+      - name: Install browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run Playwright project
         id: e2e
         continue-on-error: true
-        run: npm run test:e2e
+        run: npx playwright test --project=${{ matrix.project }}
       - name: Upload Playwright report
         if: always() && steps.e2e.outcome != 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 7
-      - name: Write frontend summary
+      - name: Fail if project is not healthy
         if: always()
+        run: test "${{ steps.e2e.outcome }}" = success
+
+  frontend:
+    if: always()
+    needs: [checks, e2e]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Write frontend summary
         run: |
-          format="FAIL"
-          lint="FAIL"
-          lint_css="FAIL"
-          typecheck="FAIL"
-          test="FAIL"
-          build="FAIL"
-          e2e="FAIL"
-          if [ "${{ steps.format.outcome }}" = "success" ]; then format="PASS"; fi
-          if [ "${{ steps.lint.outcome }}" = "success" ]; then lint="PASS"; fi
-          if [ "${{ steps.lint_css.outcome }}" = "success" ]; then lint_css="PASS"; fi
-          if [ "${{ steps.typecheck.outcome }}" = "success" ]; then typecheck="PASS"; fi
-          if [ "${{ steps.test.outcome }}" = "success" ]; then test="PASS"; fi
-          if [ "${{ steps.build.outcome }}" = "success" ]; then build="PASS"; fi
-          if [ "${{ steps.e2e.outcome }}" = "success" ]; then e2e="PASS"; fi
           {
             echo "## Frontend"
             echo ""
             echo "| Check | Result |"
             echo "| --- | --- |"
-            echo "| Formatting with Prettier | $format |"
-            echo "| Lint with ESLint | $lint |"
-            echo "| Lint with Stylelint | $lint_css |"
-            echo "| Types with TypeScript | $typecheck |"
-            echo "| Unit tests and coverage thresholds | $test |"
-            echo "| Production build | $build |"
-            echo "| End-to-end tests (Playwright) | $e2e |"
+            echo "| Frontend checks | ${{ needs.checks.result }} |"
+            echo "| End-to-end tests (Playwright) | ${{ needs.e2e.result }} |"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Fail if frontend is not healthy
-        if: always()
         run: |
-          if [ "${{ steps.format.outcome }}" != "success" ] \
-            || [ "${{ steps.lint.outcome }}" != "success" ] \
-            || [ "${{ steps.lint_css.outcome }}" != "success" ] \
-            || [ "${{ steps.typecheck.outcome }}" != "success" ] \
-            || [ "${{ steps.test.outcome }}" != "success" ] \
-            || [ "${{ steps.build.outcome }}" != "success" ] \
-            || [ "${{ steps.browser.outcome }}" != "success" ] \
-            || [ "${{ steps.e2e.outcome }}" != "success" ]; then
+          if [ "${{ needs.checks.result }}" != "success" ] || [ "${{ needs.e2e.result }}" != "success" ]; then
             exit 1
           fi

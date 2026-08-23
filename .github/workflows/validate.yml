@@ -25,25 +25,47 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
+      - name: Cache uv packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
       - name: Install locked Python dependencies
         run: |
           python -m pip install uv==0.11.28
           uv sync --frozen --extra dev
-      - name: Validate resources
-        id: validate_resources
+      - name: Run validation checks in parallel
+        id: checks
         continue-on-error: true
-        run: uv run python scripts/validate_all.py
-      - name: Test Python pipeline
-        id: python_tests
-        continue-on-error: true
-        run: uv run pytest
+        run: |
+          mkdir -p tmp/validate
+          uv run python scripts/validate_all.py > tmp/validate/resources.log 2>&1 &
+          resources_pid=$!
+          uv run pytest > tmp/validate/tests.log 2>&1 &
+          tests_pid=$!
+          set +e
+          wait "$resources_pid"
+          resources=$?
+          wait "$tests_pid"
+          tests=$?
+          set -e
+          for log in tmp/validate/*.log; do
+            cat "$log"
+          done
+          {
+            echo "resources=$resources"
+            echo "tests=$tests"
+          } >> "$GITHUB_OUTPUT"
+          if [ "$resources" -ne 0 ] || [ "$tests" -ne 0 ]; then
+            exit 1
+          fi
       - name: Write validation summary
         if: always()
         run: |
           validation="FAIL"
           tests="FAIL"
-          if [ "${{ steps.validate_resources.outcome }}" = "success" ]; then validation="PASS"; fi
-          if [ "${{ steps.python_tests.outcome }}" = "success" ]; then tests="PASS"; fi
+          if [ "${{ steps.checks.outputs.resources }}" = "0" ]; then validation="PASS"; fi
+          if [ "${{ steps.checks.outputs.tests }}" = "0" ]; then tests="PASS"; fi
           {
             echo "## Data validation"
             echo ""
@@ -55,6 +77,6 @@ jobs:
       - name: Fail if validation is not healthy
         if: always()
         run: |
-          if [ "${{ steps.validate_resources.outcome }}" != "success" ] || [ "${{ steps.python_tests.outcome }}" != "success" ]; then
+          if [ "${{ steps.checks.outputs.resources }}" != "0" ] || [ "${{ steps.checks.outputs.tests }}" != "0" ]; then
             exit 1
           fi

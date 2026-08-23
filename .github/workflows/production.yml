@@ -28,6 +28,11 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7299d2fc39830
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('package-lock.json') }}
       - name: Install browser
         run: npx playwright install --with-deps chromium
       - name: Run production browser smoke tests

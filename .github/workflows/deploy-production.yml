@@ -41,6 +41,11 @@ jobs:
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
+      - name: Cache uv packages
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
       - name: Install locked Python dependencies
         run: |
           python -m pip install uv==0.11.28
@@ -67,12 +72,24 @@ jobs:
           uv run python scripts/generate_eda_report.py
           git diff --exit-code -- data README.md docs/SCHEMA.md CITATION.cff generated public
       - run: npm ci
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
       - name: Type check, lint, unit tests, build
         run: npm run check
       - name: Install browsers
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Run browser suite
         run: npx playwright test
+      - name: Upload verified site
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verified-site
+          path: dist/
+          if-no-files-found: error
+          retention-days: 1
 
   deploy:
     name: Deploy Production
@@ -92,8 +109,16 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - name: Build site
-        run: npm run build
+      - name: Cache Playwright browsers
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-chromium-${{ hashFiles('package-lock.json') }}
+      - name: Download verified site
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: verified-site
+          path: dist
       - name: Publish to Cloudflare Pages
         uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
         with:
