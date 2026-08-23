@@ -498,7 +498,7 @@ Generated files are never edited by hand. `make generate` is deterministic, and 
 | [Midnight Sun CTF](https://play.midnightsunctf.com) | Global CTF by HackingForSoju, with online qualifiers and finals in Stockholm. | June | Online |
 | [HackTheBox Cyber Apocalypse](https://www.hackthebox.com/events/cyber-apocalypse-2026) | CTF by Hack The Box, with thousands of teams and a massive prize pool. | July | Online |
 | [HITCON CTF](https://ctf.hitcon.org) | CTF hosted by HITCON, known for extreme technical difficulty and elite global competition. | August | Online |
-| [CSAW CTF](https://csaw.io/ctf) | Student CTF by NYU, with online qualifiers and finals in New York City. | September | Online |
+| [CSAW CTF](https://csaw.io/node/50) | Student CTF by NYU, with online qualifiers and finals in New York City. | September | Online |
 | [CyberSci](https://cybersecuritychallenge.ca/en) | Canadian student CTF with regional rounds and a national final in Ottawa. | November | Montreal, Quebec |
 | [0CTF](https://ctf.0ops.sjtu.cn) | CTF hosted by Shanghai Jiao Tong University, known for research-grade challenges. | December | Online |
 

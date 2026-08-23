@@ -1968,7 +1968,7 @@
     {
       "id": "csaw-ctf",
       "name": "CSAW CTF",
-      "url": "https://csaw.io/ctf",
+      "url": "https://csaw.io/node/50",
       "description": "Student CTF by NYU, with online qualifiers and finals in New York City.",
       "category": "ctfs",
       "location": "Online",
