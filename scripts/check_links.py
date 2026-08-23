@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from utils import get_all_resource_files, load_json, log, save_json
 TIMEOUT = 10
 MAX_ATTEMPTS = 3
 RETRY_DELAY_SECONDS = 2
+MAX_WORKERS = 8
 REQUEST_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -97,37 +99,51 @@ def check_url(url):
     return "inconclusive", message
 
 
+def check_resource(entry):
+    return check_url(entry[1].get("url"))
+
+
 def check_links():
     hard_dead_links = []
     inconclusive_links = []
     unsafe_links = []
     today = str(date.today())
     touched_files = []
+    datasets = {}
+    resource_entries = []
 
     for path in get_all_resource_files():
         data = load_json(path)
-        file_changed = False
-        for resource in data.get("resources", []):
-            url = resource.get("url")
-            rid = resource.get("id")
-            status, result = check_url(url)
-            if status == "verified":
-                if resource.get("last_verified") != today:
-                    resource["last_verified"] = today
-                    file_changed = True
-                log(f"✅ {rid}: {url} ({result})")
-            elif status == "unsafe":
-                unsafe_links.append((rid, url, result))
-                log(f"🚫 {rid}: {url} ({result})")
-            elif status == "hard_dead":
-                hard_dead_links.append((rid, url, result))
-                log(f"❌ {rid}: {url} ({result})")
-            else:
-                inconclusive_links.append((rid, url, result))
-                log(f"⚠️ {rid}: {url} ({result})")
+        datasets[path] = data
+        resource_entries.extend(
+            (path, resource) for resource in data.get("resources", [])
+        )
 
-        if file_changed:
-            save_json(path, data)
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        results = list(executor.map(check_resource, resource_entries))
+
+    changed_paths = set()
+    for (path, resource), (status, result) in zip(resource_entries, results):
+        url = resource.get("url")
+        rid = resource.get("id")
+        if status == "verified":
+            if resource.get("last_verified") != today:
+                resource["last_verified"] = today
+                changed_paths.add(path)
+            log(f"✅ {rid}: {url} ({result})")
+        elif status == "unsafe":
+            unsafe_links.append((rid, url, result))
+            log(f"🚫 {rid}: {url} ({result})")
+        elif status == "hard_dead":
+            hard_dead_links.append((rid, url, result))
+            log(f"❌ {rid}: {url} ({result})")
+        else:
+            inconclusive_links.append((rid, url, result))
+            log(f"⚠️ {rid}: {url} ({result})")
+
+    for path in datasets:
+        if path in changed_paths:
+            save_json(path, datasets[path])
             touched_files.append(path.name)
 
     if touched_files:
@@ -163,7 +179,6 @@ def check_links():
         log(f"\n{len(hard_dead_links)} hard-dead link(s) found.")
         sys.exit(1)
     log("✅ Link check finished without hard-dead links.")
-
 
 if __name__ == "__main__":
     check_links()
