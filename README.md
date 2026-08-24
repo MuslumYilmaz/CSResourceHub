@@ -541,7 +541,7 @@ Generated files are never edited by hand. `make generate` is deterministic, and 
 | [Canadian Team Programming Competition](https://www.ctpc.ca) | National data structure sprint with university pride and corporate sponsor recruiting. | April | Online |
 | [Lan ETS](https://lanets.ca) | North America's largest student-run LAN party, with gaming competitions and cash prizes. | May | Montreal, Quebec |
 | [JDIS Games](https://jdis.ca) | Autonomous AI agent optimization tournament at UdeS competing for sponsor-backed cash and tech gear. | July | Sherbrooke, Quebec |
-| [Akuna Capital Virtual Quant Trading Challenge](https://akunacapital.com/careers/job/7993921/akuna-capitals-2026-virtual-quant-trading-challenge?gh_jid=7993921) | Virtual trading challenge by Akuna Capital for students breaking into quantitative finance. | August | Online |
+| [Akuna Capital Virtual Quant Trading Challenge](https://akunacapital.com/careers) | Virtual trading challenge by Akuna Capital for students breaking into quantitative finance. | August | Online |
 | [Lux AI](https://www.lux-ai.org) | Multi-month reinforcement learning agent tournament with global rank and tiered cash pools. | October | Online |
 | [Meta Hacker Cup](https://en.wikipedia.org/wiki/Meta_Hacker_Cup) | Global elimination competitive programming championship with a $20,000 top cash prize. | October | Online |
 | [International Data Analysis Olympiad](https://idao.world) | Machine learning and big data competition with tech gear and internship pathways. | December | Online |
