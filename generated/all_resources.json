@@ -1,6 +1,6 @@
 {
-  "generated": "2026-07-09",
-  "total": 334,
+  "generated": "2026-08-29",
+  "total": 335,
   "resources": [
     {
       "id": "alpha-vantage",
@@ -2694,6 +2694,16 @@
       "category": "interview-prep",
       "date_added": "2026-07-01",
       "last_verified": "2026-07-11",
+      "type": "guide"
+    },
+    {
+      "id": "frontendatlas-system-design-blueprint",
+      "name": "FrontendAtlas System Design Blueprint",
+      "url": "https://frontendatlas.com/guides/system-design-blueprint",
+      "description": "Free guide to system design interview frameworks, trade-offs, and architecture practice.",
+      "category": "interview-prep",
+      "date_added": "2026-08-29",
+      "last_verified": "2026-08-29",
       "type": "guide"
     },
     {
