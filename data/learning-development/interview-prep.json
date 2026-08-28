@@ -62,6 +62,16 @@
       "type": "guide"
     },
     {
+      "id": "frontendatlas-system-design-blueprint",
+      "name": "FrontendAtlas System Design Blueprint",
+      "url": "https://frontendatlas.com/guides/system-design-blueprint",
+      "description": "Free guide to system design interview frameworks, trade-offs, and architecture practice.",
+      "category": "interview-prep",
+      "date_added": "2026-08-29",
+      "last_verified": "2026-08-29",
+      "type": "guide"
+    },
+    {
       "id": "jakes-resume",
       "name": "Jake's Resume",
       "url": "https://www.overleaf.com/latex/templates/jakes-resume/syzfjbzwjncs",
