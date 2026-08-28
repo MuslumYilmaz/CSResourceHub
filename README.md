@@ -34,7 +34,7 @@
   <strong>14 CS Opportunity Categories</strong> &nbsp;|&nbsp; <strong>Automated Validation</strong> &nbsp;|&nbsp; <strong>Multi-Format Exports</strong>
 </p>
 
-![version](https://img.shields.io/static/v1?label=version&message=v1.0.0&color=7c3aed) ![resources](https://img.shields.io/static/v1?label=resources&message=334&color=2563eb) [![ci](https://img.shields.io/github/check-runs/NicholasXydis/CSResourceHub/main?label=ci)](https://github.com/NicholasXydis/CSResourceHub/actions) [![updated](https://img.shields.io/github/last-commit/NicholasXydis/CSResourceHub?label=updated&color=0891b2&display_timestamp=author)](https://github.com/NicholasXydis/CSResourceHub/commits/main) [![license](https://img.shields.io/static/v1?label=license&message=MIT&color=db2777)](https://github.com/NicholasXydis/CSResourceHub/blob/main/LICENSE) ![contributions](https://img.shields.io/static/v1?label=contributions&message=welcome&color=f59e0b)
+![version](https://img.shields.io/static/v1?label=version&message=v1.0.0&color=7c3aed) ![resources](https://img.shields.io/static/v1?label=resources&message=335&color=2563eb) [![ci](https://img.shields.io/github/check-runs/NicholasXydis/CSResourceHub/main?label=ci)](https://github.com/NicholasXydis/CSResourceHub/actions) [![updated](https://img.shields.io/github/last-commit/NicholasXydis/CSResourceHub?label=updated&color=0891b2&display_timestamp=author)](https://github.com/NicholasXydis/CSResourceHub/commits/main) [![license](https://img.shields.io/static/v1?label=license&message=MIT&color=db2777)](https://github.com/NicholasXydis/CSResourceHub/blob/main/LICENSE) ![contributions](https://img.shields.io/static/v1?label=contributions&message=welcome&color=f59e0b)
 
 <a href="https://csresourcehub.ca">
   <img src="docs/csresourcehub-btn.svg" alt="Live Site">
@@ -60,7 +60,7 @@ Browse resources by area and category.
 
 | Area | Categories |
 | --- | --- |
-| 📚 Learning & Development | [Learning Resources](#learning-resources) (59)<br>[Interview Prep](#interview-prep) (25)<br>[Communities & Clubs](#communities-clubs) (24) |
+| 📚 Learning & Development | [Learning Resources](#learning-resources) (59)<br>[Interview Prep](#interview-prep) (26)<br>[Communities & Clubs](#communities-clubs) (24) |
 | 🏆 Experience | [Hackathons](#hackathons) (22)<br>[CTFs](#ctfs) (15)<br>[Game Jams](#game-jams) (11)<br>[Competitions](#competitions) (14) |
 | 🧩 Building & Open Source | [Open Source](#open-source) (36)<br>[Developer Resources](#developer-resources) (45)<br>[Project-Based Learning](#project-based-learning) (14) |
 | 💼 Careers & Perks | [Internships & Fellowships](#internships-fellowships) (22)<br>[Recruitment & Events](#recruitment-events) (14)<br>[Certifications](#certifications) (12)<br>[Student Benefits](#student-benefits) (21) |
@@ -375,7 +375,7 @@ Generated files are never edited by hand. `make generate` is deterministic, and 
 
 ### Interview Prep
 
-**25 resources** · `interview-prep`
+**26 resources** · `interview-prep`
 
 | Resource | Description | Type |
 | --- | --- | --- |
@@ -385,6 +385,7 @@ Generated files are never edited by hand. `make generate` is deterministic, and 
 | [Grokking the Coding Interview](https://www.designgurus.io/course/grokking-the-coding-interview) | Pattern-based course teaching common algorithmic approaches used in coding interviews. | Course |
 | [Grokking the Object-Oriented Design Interview](https://www.designgurus.io/course/grokking-the-object-oriented-design-interview) | Course teaching object-oriented design concepts tested in software engineering interviews. | Course |
 | [Coding Interview University](https://github.com/jwasham/coding-interview-university) | Self-study roadmap covering data structures, algorithms, systems, databases, and interviews. | Guide |
+| [FrontendAtlas System Design Blueprint](https://frontendatlas.com/guides/system-design-blueprint) | Free guide to system design interview frameworks, trade-offs, and architecture practice. | Guide |
 | [Jake's Resume](https://www.overleaf.com/latex/templates/jakes-resume/syzfjbzwjncs) | Popular LaTeX resume template widely used by computer science students and software engineers. | Guide |
 | [System Design Primer](https://github.com/donnemartin/system-design-primer) | Open-source guide to system design interviews covering scalability, databases, and caching. | Guide |
 | [Tech Interview Handbook](https://www.techinterviewhandbook.org) | Guide covering coding, behavioral, system design, resume, and interview preparation. | Guide |
